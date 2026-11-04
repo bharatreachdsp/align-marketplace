@@ -1,0 +1,39 @@
+# The public plugin marketplace's only workflow (ALIGN L41). Kept in the private repository at
+# plugins/claude-code/workflows/validate.yml and placed here by the release sync; edits made here are overwritten by
+# the next release. It checks the plugin and the marketplace file with Claude Code's own strict validator, the same
+# check the private repository's CI runs before a release is tagged.
+name: validate
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Claude Code 2.1.303 (pinned)
+        run: npm install --global --no-fund --no-audit @anthropic-ai/claude-code@2.1.303
+      - name: The plugin, strictly
+        env:
+          DISABLE_AUTOUPDATER: "1"
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+        run: claude plugin validate --strict .claude-plugin/plugin.json
+      - name: The marketplace file, strictly
+        env:
+          DISABLE_AUTOUPDATER: "1"
+          CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1"
+        run: claude plugin validate --strict .claude-plugin/marketplace.json

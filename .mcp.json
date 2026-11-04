@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "align": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/align",
+      "args": ["mcp"]
+    }
+  }
+}

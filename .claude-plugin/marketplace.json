@@ -1,0 +1,16 @@
+{
+  "name": "align-marketplace",
+  "owner": {
+    "name": "The ALIGN authors",
+    "url": "https://align.bharatreachdsp.com"
+  },
+  "description": "The ALIGN plugin for Claude Code: the decision ledger for teams that build with AI agents.",
+  "plugins": [
+    {
+      "name": "align",
+      "source": "./",
+      "description": "Captures what was decided in your Claude Code sessions and serves your team's confirmed decisions back at session start and through MCP tools.",
+      "category": "productivity"
+    }
+  ]
+}

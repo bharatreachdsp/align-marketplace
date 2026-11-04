@@ -1,0 +1,19 @@
+{
+  "name": "align",
+  "displayName": "ALIGN",
+  "version": "0.1.4",
+  "description": "The decision ledger for teams that build with AI agents: captures what was decided in your Claude Code sessions, serves the team's confirmed decisions back at session start and through MCP tools.",
+  "author": {
+    "name": "The ALIGN authors",
+    "url": "https://align.bharatreachdsp.com"
+  },
+  "homepage": "https://align.bharatreachdsp.com/install",
+  "repository": "https://github.com/bharatreachdsp/align-marketplace",
+  "license": "MIT",
+  "keywords": ["decisions", "adr", "mcp", "context", "team"],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://align.bharatreachdsp.com/docs",
+  "supportUrl": "https://github.com/bharatreachdsp/align-cli/issues",
+  "privacyPolicyUrl": "https://align.bharatreachdsp.com/privacy",
+  "termsOfServiceUrl": "https://align.bharatreachdsp.com/terms"
+}

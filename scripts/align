@@ -1,0 +1,62 @@
+#!/bin/sh
+# The ALIGN plugin's launcher (L41). Claude Code runs it for the plugin's hooks, its MCP server and its commands.
+#
+# It runs the ALIGN installed on this machine (~/.align/bin/align, written by `align init`) when there is one, so the
+# plugin and `align init` share one installation, one sign-in and one set of files. Otherwise it runs the CLI bundle
+# shipped inside the plugin (lib/align.mjs, the same file as the npm package's), which is what `/align:init` uses to
+# install ALIGN the first time.
+#
+# - The home directory comes from the password database (the account running this), never from HOME, which a
+#   repository's Claude Code settings can change for the hooks it runs.
+# - Hook calls fail closed: any problem means exit 0 with nothing printed, and with no installation there is nothing
+#   opted in, so a hook exits at once.
+# - Without an installation, `mcp` and `pack` start from an empty environment plus the same short allow-list the
+#   installed shim uses, so no proxy, extra CA or Node option a repository sets reaches them.
+# Nothing here reads, writes or sends anything itself.
+
+case "${1-}" in
+  hook) is_hook=1 ;;
+  *) is_hook= ;;
+esac
+
+fail() {
+  [ -n "$is_hook" ] && exit 0
+  echo "align: $1" >&2
+  exit 1
+}
+
+user=$(id -un 2>/dev/null) || fail "cannot tell which account this is"
+case "$user" in
+  "" | -* | *[!A-Za-z0-9._-]*) fail "unsupported account name" ;;
+esac
+# Tilde expansion of a checked account name reads the password database.
+eval "home=~$user"
+case "$home" in
+  /*) ;;
+  *) fail "cannot find this account's home directory" ;;
+esac
+
+shim="$home/.align/bin/align"
+if [ -f "$shim" ] && [ -x "$shim" ]; then
+  if [ -n "$is_hook" ]; then
+    "$shim" "$@" 2>/dev/null
+    exit 0
+  fi
+  exec "$shim" "$@"
+fi
+
+# Not installed yet: nothing is opted in, so a hook has nothing to do.
+[ -n "$is_hook" ] && exit 0
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P) || fail "cannot find the plugin's folder"
+bundle="$here/../lib/align.mjs"
+[ -f "$bundle" ] || fail "the plugin's copy of the CLI is missing; reinstall the plugin or run: npx @align-agent/cli init"
+node=$(command -v node 2>/dev/null) || fail "Node.js 22.14 or later is needed: https://nodejs.org"
+unset NODE_OPTIONS NODE_PATH
+
+case "${1-}" in
+  mcp | pack)
+    exec /usr/bin/env -i ${PATH+"PATH=$PATH"} ${USER+"USER=$USER"} ${LOGNAME+"LOGNAME=$LOGNAME"} ${LANG+"LANG=$LANG"} ${LC_ALL+"LC_ALL=$LC_ALL"} ${LC_CTYPE+"LC_CTYPE=$LC_CTYPE"} ${TZ+"TZ=$TZ"} ${TMPDIR+"TMPDIR=$TMPDIR"} ${CURSOR_VERSION+"CURSOR_VERSION=$CURSOR_VERSION"} ${CURSOR_PROJECT_DIR+"CURSOR_PROJECT_DIR=$CURSOR_PROJECT_DIR"} ${CODEX_HOME+"CODEX_HOME=$CODEX_HOME"} ${GIT_AUTHOR_EMAIL+"GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL"} ${GIT_REFLOG_ACTION+"GIT_REFLOG_ACTION=$GIT_REFLOG_ACTION"} "$node" "$bundle" "$@"
+    ;;
+esac
+exec "$node" "$bundle" "$@"
