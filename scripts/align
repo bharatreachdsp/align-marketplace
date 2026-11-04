@@ -50,7 +50,7 @@ fi
 
 here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P) || fail "cannot find the plugin's folder"
 bundle="$here/../lib/align.mjs"
-[ -f "$bundle" ] || fail "the plugin's copy of the CLI is missing; reinstall the plugin or run: npx @align-agent/cli init"
+[ -f "$bundle" ] || fail "the plugin's copy of the CLI is missing; reinstall the plugin (install steps: https://align.bharatreachdsp.com/install#claude-code-plugin)"
 node=$(command -v node 2>/dev/null) || fail "Node.js 22.14 or later is needed: https://nodejs.org"
 unset NODE_OPTIONS NODE_PATH
 

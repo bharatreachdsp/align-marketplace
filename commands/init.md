@@ -27,5 +27,5 @@ steps in order and show them each command's output as it is.
    own terminal whenever they like. The plugin already provides the hooks, the MCP server and `/align:align`, so
    nothing else needs installing.
 
-If the command is missing or fails to start, tell the person they can run `npx @align-agent/cli init` in a
-terminal in this repository instead.
+If the command is missing or fails to start, tell the person to follow the install steps at
+https://align.bharatreachdsp.com/install#claude-code-plugin instead.

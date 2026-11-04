@@ -42,7 +42,7 @@ ever to you. There are no per-developer metrics anywhere in ALIGN.
 - The ALIGN server for your account, `https://align.bharatreachdsp.com` (or the server you signed in to with
   `--server`): sign-in, uploads of redacted session events, the context pack and the MCP tools.
 - Your browser opens the same server's sign-in page during `/align:init`.
-- `https://registry.npmjs.org` only when you run `npx @align-agent/cli` yourself (the plugin itself updates through
+- `https://registry.npmjs.org` only when you install the CLI from npm yourself (the plugin itself updates through
   Claude Code's plugin manager).
 
 Nothing else. The plugin sends no telemetry of its own.
