@@ -52,7 +52,7 @@ Nothing else. The plugin sends no telemetry of its own.
 - Stop capture in one repository: `align off` (or run `align on` to resume).
 - Delete a session you already sent: `align sessions rm <id>`.
 - Remove the plugin: `/plugin uninstall align@align-marketplace`.
-- Remove everything ALIGN added on this machine: `align uninstall --purge` (it deletes `~/.align`).
+- Remove everything ALIGN added on this machine: `align uninstall --purge --yes` (it deletes `~/.align`).
 
-Source: the CLI is open source under the MIT licence at https://github.com/bharatreachdsp/align-cli. Security
+Source: the CLI's source is public under the MIT licence at https://github.com/bharatreachdsp/align-cli. Security
 reports: see SECURITY.md there.
