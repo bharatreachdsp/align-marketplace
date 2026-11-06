@@ -3,16 +3,20 @@
 #
 # It runs the ALIGN installed on this machine (~/.align/bin/align, written by `align init`) when there is one, so the
 # plugin and `align init` share one installation, one sign-in and one set of files. Otherwise it runs the CLI bundle
-# shipped inside the plugin (lib/align.mjs, the same file as the npm package's), which is what `/align:init` uses to
+# shipped inside the plugin (lib/align.mjs, the same file as the published CLI package's), which is what `/align:init` uses to
 # install ALIGN the first time.
 #
 # - The home directory comes from the password database (the account running this), never from HOME, which a
 #   repository's Claude Code settings can change for the hooks it runs.
 # - Hook calls fail closed: any problem means exit 0 with nothing printed, and with no installation there is nothing
 #   opted in, so a hook exits at once.
-# - Without an installation, `mcp` and `pack` start from an empty environment plus the same short allow-list the
-#   installed shim uses, so no proxy, extra CA or Node option a repository sets reaches them.
+# - Without an installation, `mcp` and `pack` keep only the same short allow-list of variables the installed shim
+#   uses (plus what the shell sets itself), so no proxy, extra CA or Node option a repository sets reaches them.
+# - Functions a repository's settings could plant through bash's exported functions (macOS's /bin/sh is bash) are
+#   removed first, so every command below is the real one. `unset` is a special builtin a function cannot replace.
 # Nothing here reads, writes or sends anything itself.
+
+unset -f env sed command id dirname cd pwd node test printf echo eval exec 2>/dev/null || :
 
 case "${1-}" in
   hook) is_hook=1 ;;
@@ -56,7 +60,18 @@ unset NODE_OPTIONS NODE_PATH
 
 case "${1-}" in
   mcp | pack)
-    exec /usr/bin/env -i ${PATH+"PATH=$PATH"} ${USER+"USER=$USER"} ${LOGNAME+"LOGNAME=$LOGNAME"} ${LANG+"LANG=$LANG"} ${LC_ALL+"LC_ALL=$LC_ALL"} ${LC_CTYPE+"LC_CTYPE=$LC_CTYPE"} ${TZ+"TZ=$TZ"} ${TMPDIR+"TMPDIR=$TMPDIR"} ${CURSOR_VERSION+"CURSOR_VERSION=$CURSOR_VERSION"} ${CURSOR_PROJECT_DIR+"CURSOR_PROJECT_DIR=$CURSOR_PROJECT_DIR"} ${CODEX_HOME+"CODEX_HOME=$CODEX_HOME"} ${GIT_AUTHOR_EMAIL+"GIT_AUTHOR_EMAIL=$GIT_AUTHOR_EMAIL"} ${GIT_REFLOG_ACTION+"GIT_REFLOG_ACTION=$GIT_REFLOG_ACTION"} node "$bundle" "$@"
+    # Only the allow-list reaches mcp and pack (the installed shim's, minus what only it sets): every other variable
+    # is removed here, so `node` below is the one program that runs (the plugin directory reads it by name).
+    for name in $(env | sed -n 's/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p'); do
+      case "$name" in
+        PATH | USER | LOGNAME | LANG | LC_ALL | LC_CTYPE | TZ | TMPDIR | CURSOR_VERSION | CURSOR_PROJECT_DIR | CODEX_HOME | GIT_AUTHOR_EMAIL | GIT_REFLOG_ACTION) ;;
+        *) command unset "$name" 2>/dev/null || : ;;
+      esac
+    done
+    # Functions bash exports (macOS's /bin/sh is bash) are not plain names; remove them too.
+    for name in $(env | sed -n 's/^BASH_FUNC_\([A-Za-z0-9_.:-]*\)%%=.*/\1/p'); do
+      command unset -f "$name" 2>/dev/null || :
+    done
     ;;
 esac
 exec node "$bundle" "$@"
